@@ -9,9 +9,9 @@ namespace DebuggingTechniques
 {
     class DiceProbabilities
     {
-        public static string debug = "";
         public static Dictionary<int, Double> CalculateProbabilitiesForNumberOfDice(int numberOfDice)
         {
+            string debug = "";
             // Track sums' frequency.
             Dictionary<int, int> sumCounts = new Dictionary<int, int>();
             const int NUMBER_OF_SIDES = 6;
@@ -27,7 +27,7 @@ namespace DebuggingTechniques
                 debug += sum.ToString() + ":" + sumCounts[sum].ToString() + " ";
             }
 
-            Debug.WriteLine(debug);
+            Debug.WriteLine("Initial sumCounts setup: " + debug);
             debug = "";
 
             int[] diceValues = new int[numberOfDice]; // Holds dices' value.
@@ -39,7 +39,7 @@ namespace DebuggingTechniques
                 debug += diceValues[diceValue].ToString() + " ";
             }
 
-            Debug.WriteLine(debug);
+            Debug.WriteLine("Initial dice values set: " + debug);
             debug = "";
 
             bool haveAllCombinationsBeenExplored = false;
@@ -55,29 +55,26 @@ namespace DebuggingTechniques
                     sumDiceValues += value;
                 }
 
+                Debug.WriteLine($"Updated sumCounts: {sumDiceValues}:{sumCounts[sumDiceValues]}.");
                 sumCounts[sumDiceValues] += 1;
-
-                debug += sumDiceValues.ToString() + ":" + sumCounts[sumDiceValues].ToString() + " ";
-                Debug.WriteLine(debug);
-                debug = "";
-
+                
                 int indexDiceValue = 0;
                 bool isWithinSideLimit = false;
 
                 // Iterate through dice values to explore all possible combinations.
                 while (!isWithinSideLimit)
                 {
+                    Debug.WriteLine($"Attempting to increment dice at {indexDiceValue}.");
                     diceValues[indexDiceValue] += 1;
-                    debug += diceValues.ToString() + ":" + diceValues[indexDiceValue].ToString() + " ";
 
                     // Ensure die value doesn't exceed the  number of sides.
                     if (diceValues[indexDiceValue] <= NUMBER_OF_SIDES)
                     {
                         isWithinSideLimit = true;
-                        Debug.WriteLine(debug);
                     }
                     else
                     {
+                        Debug.WriteLine($"Resetting dice at index: {indexDiceValue} to 1.");
                         // Reset current die and proceed to increment the next if possible.
                         if (indexDiceValue == numberOfDice - 1)
                         {
@@ -93,17 +90,21 @@ namespace DebuggingTechniques
                 }
             }
 
+            Debug.WriteLine("All dice combinations explored");
+
             // Store probabilities of each sum occuring from rolling the dice.
             Dictionary<int, Double> rollProbability = new Dictionary<int, double>();
 
             // Calculate total possible outcomes to use as a denominator in probability calculations.
-            Double totalPossibleOutcomes = Math.Pow(6.0, (Double)numberOfDice); 
+            Double totalPossibleOutcomes = Math.Pow(6.0, (Double)numberOfDice);
 
-            
             for (int indexSum = minimumSum; indexSum <= maximumSum; indexSum++)
             {
                 rollProbability[indexSum] = (Double)sumCounts[indexSum] / totalPossibleOutcomes;
+                debug += indexSum.ToString() + ":" + rollProbability[indexSum].ToString() + " ";
             }
+            Debug.WriteLine($"Roll probabilities calculated: {debug}.");
+            debug = "";
             return rollProbability;
         }
     }
