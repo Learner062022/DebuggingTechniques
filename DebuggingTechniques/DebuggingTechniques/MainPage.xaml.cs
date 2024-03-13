@@ -25,6 +25,7 @@ namespace DebuggingTechniques
         public MainPage()
         {
             this.InitializeComponent();
+            DiceProbabilities.CalculateProbabilitiesForNumberOfDice(2);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,67 +9,102 @@ namespace DebuggingTechniques
 {
     class DiceProbabilities
     {
-        public static Dictionary<int, Double> calculateProbabilitiesForNumberOfDice(int n)
+        public static string debug = "";
+        public static Dictionary<int, Double> CalculateProbabilitiesForNumberOfDice(int numberOfDice)
         {
-            Dictionary<int, int> rc = new Dictionary<int, int>();
-            int mn = n;
-            int mx = n * 6;
-            for (int i = mn; i <= mx; i++)
+            // Track sums' frequency.
+            Dictionary<int, int> sumCounts = new Dictionary<int, int>();
+            const int NUMBER_OF_SIDES = 6;
+
+            // Determine the range of possible sums from all dice showing 1 to all showing 6.
+            int minimumSum = numberOfDice; 
+            int maximumSum = numberOfDice * NUMBER_OF_SIDES; 
+
+            // Initialize sums' occurance to zero.
+            for (int sum = minimumSum; sum <= maximumSum; sum++)
             {
-                rc[i] = 0;
+                sumCounts[sum] = 0;
+                debug += sum.ToString() + ":" + sumCounts[sum].ToString() + " ";
             }
 
-            int[] d = new int[n];
+            Debug.WriteLine(debug);
+            debug = "";
 
-            for (int i = 0; i < n; i++)
+            int[] diceValues = new int[numberOfDice]; // Holds dices' value.
+
+            // Set the initial state of the dice to simulate starting the rolling process.
+            for (int diceValue = 0; diceValue < numberOfDice; diceValue++)
             {
-                d[i] = 1;
+                diceValues[diceValue] = 1;
+                debug += diceValues[diceValue].ToString() + " ";
             }
 
-            bool finished1 = false;
+            Debug.WriteLine(debug);
+            debug = "";
 
-            while (!finished1)
+            bool haveAllCombinationsBeenExplored = false;
+
+            // Generate and count all possible outcomes of dice rolls to compute frequencies.
+            while (!haveAllCombinationsBeenExplored)
             {
-                int total = 0;
-                foreach (int r in d)
+                int sumDiceValues = 0;
+
+                // Sum the dices' value to update frequency counts.
+                foreach (int value in diceValues)
                 {
-                    total += r;
+                    sumDiceValues += value;
                 }
 
-                rc[total] += 1;
+                sumCounts[sumDiceValues] += 1;
 
-                int i = 0;
-                bool finished2 = false;
+                debug += sumDiceValues.ToString() + ":" + sumCounts[sumDiceValues].ToString() + " ";
+                Debug.WriteLine(debug);
+                debug = "";
 
-                while (!finished2)
+                int indexDiceValue = 0;
+                bool isWithinSideLimit = false;
+
+                // Iterate through dice values to explore all possible combinations.
+                while (!isWithinSideLimit)
                 {
-                    d[i] += 1;
-                    if (d[i] <= 6)
+                    diceValues[indexDiceValue] += 1;
+                    debug += diceValues.ToString() + ":" + diceValues[indexDiceValue].ToString() + " ";
+
+                    // Ensure die value doesn't exceed the  number of sides.
+                    if (diceValues[indexDiceValue] <= NUMBER_OF_SIDES)
                     {
-                        finished2 = true;
+                        isWithinSideLimit = true;
+                        Debug.WriteLine(debug);
                     }
                     else
                     {
-                        if (i == n - 1)
+                        // Reset current die and proceed to increment the next if possible.
+                        if (indexDiceValue == numberOfDice - 1)
                         {
-                            finished1 = true;
-                            finished2 = true;
+                            haveAllCombinationsBeenExplored = true; 
+                            isWithinSideLimit = true;
                         }
                         else
                         {
-                            d[i] = 1;
+                            diceValues[indexDiceValue] = 1; 
                         }
                     }
-                    i++;
+                    indexDiceValue++; 
                 }
             }
-            Dictionary<int, Double> rp = new Dictionary<int, double>();
-            Double total2 = Math.Pow(6.0, (Double)n);
-            for (int i = mn; i <= mx; i++)
+
+            // Store probabilities of each sum occuring from rolling the dice.
+            Dictionary<int, Double> rollProbability = new Dictionary<int, double>();
+
+            // Calculate total possible outcomes to use as a denominator in probability calculations.
+            Double totalPossibleOutcomes = Math.Pow(6.0, (Double)numberOfDice); 
+
+            
+            for (int indexSum = minimumSum; indexSum <= maximumSum; indexSum++)
             {
-                rp[i] = (Double)rc[i] / total2;
+                rollProbability[indexSum] = (Double)sumCounts[indexSum] / totalPossibleOutcomes;
             }
-            return rp;
+            return rollProbability;
         }
     }
 }
